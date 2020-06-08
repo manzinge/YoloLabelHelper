@@ -2,6 +2,7 @@ from matplotlib import image, pyplot as plt
 from pythonAnalyser import analyseImage
 from createPlot import createPlot
 from createPlot import decision
+import os
 import glob
 import cv2
 import shutil
@@ -17,7 +18,16 @@ def getImagesFromDirectory():
         image_list.append(filename)
     return image_list
 
+def checkFolders():
+    if not os.path.exists('reLabel'):
+        os.makedirs('reLabel')
+    if not os.path.exists('trainImages'):
+        os.makedirs('trainImages')
+    if not os.path.exists('trashImages'):
+        os.makedirs('trashImages')
+
 def main():
+    checkFolders()
     imgList = getImagesFromDirectory()
     counter = 1
     for img in imgList:
