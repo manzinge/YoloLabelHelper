@@ -27,6 +27,19 @@ def getConfigSettings():
     Config.read('config.ini')
     return Config.get("YOLO", 'labelsPath'), Config.get("YOLO", 'weightsPath'), Config.get("YOLO", 'configPath') ,Config.get("YOLO", 'imgPath')
 
+def saveLabelFile(img, boxes, w, h, path):
+    labelFileName = path + img.split('/')[-1].split('.')[0] + ".txt"
+    labelFile = open(labelFileName, 'a')
+    for detection in boxes:
+        x = detection[0] / w
+        y = detection[1] / h
+        length = detection[2] / w
+        height = detection[3] / h
+        labelFile.write("0 {} {} {} {} \n".format(x, y, length, height))
+
+    labelFile.close()
+
+
 def main():
     labelsPath, weightsPath,configPath, imgPath = getConfigSettings()
     checkFolders()
@@ -41,19 +54,11 @@ def main():
         imgArray = img.split('/')
         cut = imgArray[:len(imgArray)-2]
         if decision['dec'] == 1:
-            labelFileName = "trainImages/" + img.split('/')[-1].split('.')[0] + ".txt"
-            labelFile = open(labelFileName, 'a')
-            for detection in boxes:
-                x = detection[0] / w
-                y = detection[1] / h
-                length = detection[2] / w
-                height = detection[3] / h
-                labelFile.write("0 {} {} {} {} \n".format(x, y, length, height))
-
-            labelFile.close()
+            saveLabelFile(img,boxes,w,h, 'trainImages/')
             movePath = '/'.join(cut) + '/trainImages/' + imgArray[-1].split('.')[0] + ".jpg"
 
         elif decision['dec'] == 2:
+            saveLabelFile(img,boxes,w,h, 'reLabel/')
             movePath = '/'.join(cut) + '/reLabel/' + imgArray[-1].split('.')[0] + ".jpg"
 
         elif decision['dec'] == 3:
