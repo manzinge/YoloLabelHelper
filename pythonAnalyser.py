@@ -5,7 +5,6 @@ import os
 
 def analyseImage(labelsPath, weightsPath, configPath, imgPath):
     LABELS = open(labelsPath).read().strip().split("\n")
-
     np.random.seed(42)
     COLORS = np.random.randint(0, 255, size=(len(LABELS), 3),dtype="uint8")
 
@@ -22,6 +21,7 @@ def analyseImage(labelsPath, weightsPath, configPath, imgPath):
     layerOutputs = net.forward(ln)
 
     boxes = []
+    returnboxes = []
     confidences = []
     classIDs = []
 
@@ -38,7 +38,8 @@ def analyseImage(labelsPath, weightsPath, configPath, imgPath):
                 x = int(centerX - (width / 2))
                 y = int(centerY - (height / 2))
 
-                boxes.append([x, y, int(width), int(height)])
+                boxes.append([x,y, int(width), int(height)])
+                returnboxes.append([int(centerX), int(centerY), int(width), int(height)])
                 confidences.append(float(confidence))
                 classIDs.append(classID)
 
@@ -54,4 +55,4 @@ def analyseImage(labelsPath, weightsPath, configPath, imgPath):
             text = "{}: {:.4f}".format(LABELS[classIDs[i]], confidences[i])
             cv2.putText(image, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
     
-    return boxes, image
+    return returnboxes, image

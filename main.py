@@ -2,17 +2,13 @@ from matplotlib import image, pyplot as plt
 from pythonAnalyser import analyseImage
 from createPlot import createPlot
 from createPlot import decision
+import cv2
 import os
 import glob
 import cv2
 import shutil
-
-labelsPath = ''
-weightsPath = ''
-configPath = ''
-imgPath = ''
-
-def getImagesFromDirectory():
+import configparser
+def getImagesFromDirectory(imgPath):
     image_list = []
     for filename in glob.glob(imgPath + '/*.jpg'):
         image_list.append(filename)
@@ -26,12 +22,20 @@ def checkFolders():
     if not os.path.exists('trashImages'):
         os.makedirs('trashImages')
 
+def getConfigSettings():
+    Config = configparser.ConfigParser()
+    Config.read('config.ini')
+    return Config.get("YOLO", 'labelsPath'), Config.get("YOLO", 'weightsPath'), Config.get("YOLO", 'configPath') ,Config.get("YOLO", 'imgPath')
+
 def main():
+    labelsPath, weightsPath,configPath, imgPath = getConfigSettings()
     checkFolders()
-    imgList = getImagesFromDirectory()
+    imgList = getImagesFromDirectory(imgPath)
     counter = 1
     for img in imgList:
         print("You are working on {} of {}".format(counter, len(imgList)))
+        im = cv2.imread(img)
+        h, w, c = im.shape
         boxes, image = analyseImage(labelsPath, weightsPath, configPath, img)
         createPlot(image)
         imgArray = img.split('/')
@@ -40,12 +44,11 @@ def main():
             labelFileName = "trainImages/" + img.split('/')[-1].split('.')[0] + ".txt"
             labelFile = open(labelFileName, 'a')
             for detection in boxes:
-                labelFile.write("0 {} {} {} {} \n".format( \
-                    detection[0] / 1000, \
-                    detection[1] / 1000, \
-                    detection[2] / 1000, \
-                    detection[3] / 1000)
-                )
+                x = detection[0] / w
+                y = detection[1] / h
+                length = detection[2] / w
+                height = detection[3] / h
+                labelFile.write("0 {} {} {} {} \n".format(x, y, length, height))
 
             labelFile.close()
             movePath = '/'.join(cut) + '/trainImages/' + imgArray[-1].split('.')[0] + ".jpg"
